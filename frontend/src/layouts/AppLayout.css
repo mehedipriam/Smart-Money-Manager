@@ -1,0 +1,35 @@
+.app-layout {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-layout__topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.app-layout__brand {
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  text-decoration: none;
+}
+
+.app-layout__user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+}
+
+.app-layout__content {
+  flex: 1;
+  padding: 32px 24px;
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
+}

@@ -1,0 +1,23 @@
+.auth-layout {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: linear-gradient(180deg, var(--color-primary-light) 0%, var(--color-bg) 320px);
+}
+
+.auth-layout__panel {
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-layout__brand {
+  display: block;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--color-primary-dark);
+  text-decoration: none;
+  margin-bottom: 24px;
+}
