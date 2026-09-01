@@ -1,0 +1,12 @@
+# Root-level environment files (Docker Compose / shared secrets)
+.env
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.iml
