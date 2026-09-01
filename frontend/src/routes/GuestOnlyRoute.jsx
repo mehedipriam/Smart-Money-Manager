@@ -10,7 +10,7 @@ function GuestOnlyRoute() {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/profile" replace />;
+    return <Navigate to="/accounts" replace />;
   }
 
   return <Outlet />;

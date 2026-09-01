@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import Home from '../pages/Home.jsx';
 import ProfilePage from '../pages/ProfilePage.jsx';
+import AccountsPage from '../pages/accounts/AccountsPage.jsx';
 import LoginPage from '../pages/auth/LoginPage.jsx';
 import RegisterPage from '../pages/auth/RegisterPage.jsx';
 import RegistrationSuccessPage from '../pages/auth/RegistrationSuccessPage.jsx';
@@ -37,6 +38,7 @@ function AppRoutes() {
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
+          <Route path="/accounts" element={<AccountsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Route>

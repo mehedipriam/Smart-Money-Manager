@@ -22,8 +22,8 @@ function Home() {
         </p>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
           {isAuthenticated ? (
-            <Link to="/profile">
-              <Button>Go to profile</Button>
+            <Link to="/accounts">
+              <Button>Go to accounts</Button>
             </Link>
           ) : (
             <>

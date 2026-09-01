@@ -25,7 +25,7 @@ This project is being built phase by phase:
 1. **Project Setup** ✅
 2. **Full Database Schema Creation** ✅
 3. **Authentication** ✅
-4. Account Management
+4. **Account Management** ✅
 5. Category Management
 6. Transaction Management
 7. Dashboard
@@ -95,6 +95,27 @@ Roles are seeded automatically on startup. In dev, without a real SMTP server,
 verification/reset links are logged to the backend console instead of failing
 the request — set `MAIL_HOST`/`MAIL_PORT`/etc. (or point at a tool like
 MailHog) to receive them as real emails.
+
+### Account Management (Phase 4 — complete)
+
+Create/edit/delete financial accounts (Cash, Bank Account, Mobile Banking,
+Credit Card, Savings Account, Custom) and transfer money between two of your
+own accounts. Every account and transfer endpoint is ownership-scoped —
+`/api/accounts/**` — so one user can never read or modify another user's
+accounts (verified with a dedicated cross-user test). Balances only move
+through create/transfer, never a direct edit, so they can't drift from
+history.
+
+**Known scope limitation, called out deliberately rather than stubbed:**
+a transfer currently only moves the two account balances. Once Category
+Management (Phase 5) and Transaction Management (Phase 6) exist, it will
+also write the two linked transaction rows (EXPENSE on the source account,
+INCOME on the destination, tagged "Transfer") described in
+`docs/PHASE_2_DATABASE_SCHEMA.md`, so transfers show up in transaction
+history and reports.
+
+The frontend adds an Accounts page (account cards, create/edit/delete/transfer
+modals) and simple top navigation between Accounts and Profile.
 
 ---
 

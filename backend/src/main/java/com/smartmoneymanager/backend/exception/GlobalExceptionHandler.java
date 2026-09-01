@@ -52,12 +52,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error(ex.getMessage()));
     }
 
-    @ExceptionHandler(DuplicateResourceException.class)
-    public ResponseEntity<ApiResponse<Void>> handleDuplicate(DuplicateResourceException ex) {
+    @ExceptionHandler({ DuplicateResourceException.class, ResourceInUseException.class })
+    public ResponseEntity<ApiResponse<Void>> handleConflict(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error(ex.getMessage()));
     }
 
-    @ExceptionHandler({ InvalidTokenException.class, InvalidCredentialsException.class })
+    @ExceptionHandler({
+            InvalidTokenException.class,
+            InvalidCredentialsException.class,
+            InsufficientBalanceException.class,
+            InvalidOperationException.class
+    })
     public ResponseEntity<ApiResponse<Void>> handleBadRequest(RuntimeException ex) {
         return ResponseEntity.badRequest().body(ApiResponse.error(ex.getMessage()));
     }

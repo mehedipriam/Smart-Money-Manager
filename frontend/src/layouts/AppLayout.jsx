@@ -1,14 +1,14 @@
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import Button from '../components/common/Button.jsx';
 import './AppLayout.css';
 
 /**
- * Minimal authenticated shell for Phase 3 (just a topbar). The full dark
- * sidebar with Transactions/Accounts/Budgets/... links (spec section 14)
- * is built out in Phase 7 once those pages actually exist — until then a
- * sidebar would only contain dead links.
+ * Minimal authenticated shell (topbar + simple nav). The full dark sidebar
+ * from spec section 14 is built out in Phase 7 once Budgets/Goals/Bills/
+ * Reports/Categories all exist — until then a sidebar would be mostly dead
+ * links, so this grows one real nav item per phase instead.
  */
 function AppLayout() {
   const { user, logout } = useAuth();
@@ -24,9 +24,17 @@ function AppLayout() {
   return (
     <div className="app-layout">
       <header className="app-layout__topbar">
-        <Link to="/profile" className="app-layout__brand">
+        <Link to="/accounts" className="app-layout__brand">
           Smart Money Manager
         </Link>
+        <nav className="app-layout__nav">
+          <NavLink to="/accounts" className={({ isActive }) => (isActive ? 'active' : undefined)}>
+            Accounts
+          </NavLink>
+          <NavLink to="/profile" className={({ isActive }) => (isActive ? 'active' : undefined)}>
+            Profile
+          </NavLink>
+        </nav>
         <div className="app-layout__user">
           <span>{user?.fullName}</span>
           <Button variant="ghost" onClick={handleLogout} style={{ width: 'auto' }}>
