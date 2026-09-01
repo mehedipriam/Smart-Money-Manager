@@ -24,7 +24,7 @@ This project is being built phase by phase:
 
 1. **Project Setup** ✅
 2. **Full Database Schema Creation** ✅
-3. Authentication
+3. **Authentication** ✅
 4. Account Management
 5. Category Management
 6. Transaction Management
@@ -79,6 +79,22 @@ returns all 14 expected tables with their foreign keys and indexes in place.
 
 From Phase 3 onward the schema is treated as fixed; further phases only add
 repository/service/DTO/mapper/controller code on top of it.
+
+### Authentication (Phase 3 — complete)
+
+JWT-based auth (BCrypt password hashing, stateless access + refresh tokens,
+role-based authorization for `ROLE_USER`/`ROLE_ADMIN`), with email verification,
+forgot/reset password, change password, and profile management. Endpoints live
+under `/api/auth/**` (public) and `/api/users/**` (authenticated); every
+response uses a standard `{ success, message, data, errors }` envelope. The
+frontend has matching login/register/verify/forgot/reset pages, a protected
+profile page, an Axios client that silently refreshes an expired access token,
+and toast notifications.
+
+Roles are seeded automatically on startup. In dev, without a real SMTP server,
+verification/reset links are logged to the backend console instead of failing
+the request — set `MAIL_HOST`/`MAIL_PORT`/etc. (or point at a tool like
+MailHog) to receive them as real emails.
 
 ---
 
