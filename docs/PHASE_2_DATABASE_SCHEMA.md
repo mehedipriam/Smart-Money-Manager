@@ -1,0 +1,222 @@
+# Phase 2 — Full Database Schema
+
+All 14 tables required by the project spec are created together in this
+phase, as JPA entities under `backend/src/main/java/com/smartmoneymanager/backend/entity/`,
+mirrored by the reference DDL at `backend/src/main/resources/db/full_schema.sql`.
+
+From Phase 3 onward, **no new tables are added**. Later phases only add
+Repository / Service / DTO / Mapper / Controller layers on top of this
+schema. Any genuine future schema change will be called out explicitly as
+an exception rather than applied silently.
+
+## ER Diagram
+
+```mermaid
+erDiagram
+    USERS ||--o{ ACCOUNTS : owns
+    USERS ||--o{ CATEGORIES : "owns (custom)"
+    USERS ||--o{ TRANSACTIONS : owns
+    USERS ||--o{ RECURRING_TRANSACTIONS : owns
+    USERS ||--o{ BUDGETS : owns
+    USERS ||--o{ GOALS : owns
+    USERS ||--o{ BILLS : owns
+    USERS ||--o{ NOTIFICATIONS : receives
+    USERS ||--o{ PASSWORD_RESET_TOKENS : requests
+    USERS ||--o{ EMAIL_VERIFICATION_TOKENS : requests
+    USERS }o--o{ ROLES : "has (user_roles)"
+
+    ACCOUNTS ||--o{ TRANSACTIONS : "used in"
+    ACCOUNTS ||--o{ RECURRING_TRANSACTIONS : "used in"
+
+    CATEGORIES ||--o{ TRANSACTIONS : classifies
+    CATEGORIES ||--o{ RECURRING_TRANSACTIONS : classifies
+    CATEGORIES ||--o{ BUDGETS : "limits spending on"
+    CATEGORIES ||--o{ BILLS : classifies
+
+    GOALS ||--o{ GOAL_CONTRIBUTIONS : accumulates
+
+    USERS {
+        bigint id PK
+        varchar full_name
+        varchar email UK
+        varchar password
+        varchar phone
+        varchar default_currency
+        varchar preferred_language
+        boolean email_verified
+        boolean enabled
+        datetime created_at
+        datetime updated_at
+    }
+
+    ROLES {
+        bigint id PK
+        varchar name UK
+    }
+
+    ACCOUNTS {
+        bigint id PK
+        bigint user_id FK
+        varchar account_name
+        varchar account_type
+        decimal initial_balance
+        decimal current_balance
+        varchar currency
+        datetime created_at
+        datetime updated_at
+    }
+
+    CATEGORIES {
+        bigint id PK
+        bigint user_id FK "nullable: NULL = default category"
+        varchar name
+        varchar type
+        boolean is_default
+        datetime created_at
+        datetime updated_at
+    }
+
+    TRANSACTIONS {
+        bigint id PK
+        bigint user_id FK
+        bigint account_id FK
+        bigint category_id FK
+        varchar type
+        decimal amount
+        date transaction_date
+        varchar description
+        varchar note
+        datetime created_at
+        datetime updated_at
+    }
+
+    RECURRING_TRANSACTIONS {
+        bigint id PK
+        bigint user_id FK
+        bigint account_id FK
+        bigint category_id FK
+        varchar type
+        decimal amount
+        varchar frequency
+        date start_date
+        date next_run_date
+        date end_date
+        boolean active
+        datetime created_at
+        datetime updated_at
+    }
+
+    BUDGETS {
+        bigint id PK
+        bigint user_id FK
+        bigint category_id FK
+        decimal budget_amount
+        int month
+        int year
+        datetime created_at
+        datetime updated_at
+    }
+
+    GOALS {
+        bigint id PK
+        bigint user_id FK
+        varchar goal_name
+        decimal target_amount
+        decimal current_saved_amount
+        date target_date
+        varchar status
+        datetime created_at
+        datetime updated_at
+    }
+
+    GOAL_CONTRIBUTIONS {
+        bigint id PK
+        bigint goal_id FK
+        decimal amount
+        date contribution_date
+        datetime created_at
+    }
+
+    BILLS {
+        bigint id PK
+        bigint user_id FK
+        varchar bill_name
+        decimal amount
+        date due_date
+        bigint category_id FK "nullable"
+        varchar recurring_type "nullable"
+        varchar payment_status
+        datetime created_at
+        datetime updated_at
+    }
+
+    NOTIFICATIONS {
+        bigint id PK
+        bigint user_id FK
+        varchar type
+        varchar title
+        varchar message
+        boolean is_read
+        datetime created_at
+    }
+
+    PASSWORD_RESET_TOKENS {
+        bigint id PK
+        bigint user_id FK
+        varchar token UK
+        datetime expiry_date
+        boolean used
+        datetime created_at
+    }
+
+    EMAIL_VERIFICATION_TOKENS {
+        bigint id PK
+        bigint user_id FK
+        varchar token UK
+        datetime expiry_date
+        boolean used
+        datetime created_at
+    }
+```
+
+## Table-by-table notes
+
+| Table | Relationship shape | Notes |
+|---|---|---|
+| `users` | 1—N to almost everything | Owns all financial data. `enabled` drives admin enable/disable; hard-delete is intentionally **not** cascaded from here — disabling is the supported admin action. |
+| `roles` | M—N with `users` via `user_roles` | Seeded with `ROLE_USER` / `ROLE_ADMIN` in Phase 3 (registration/auth needs to exist first). |
+| `user_roles` | pure join table | Generated by `@ManyToMany` + `@JoinTable` on `User.roles`, `ON DELETE CASCADE` both directions. |
+| `accounts` | N—1 to `users` | `current_balance` is maintained by service logic (deposits/withdrawals/transfers), `initial_balance` is immutable history. |
+| `categories` | N—1 to `users` (nullable) | `user_id IS NULL` marks a default/system category, seeded once and never deletable by users (enforced in the service layer, Phase 5). |
+| `transactions` | N—1 to `users`, `accounts`, `categories` | Account-to-account transfers (Phase 4) are modeled as **two** transactions (an EXPENSE on the source account, an INCOME on the destination account) tagged with a "Transfer" category — no separate `transfers` table, matching the fixed field list in the spec. |
+| `recurring_transactions` | N—1 to `users`, `accounts`, `categories` | A scheduler (Phase 6) advances `next_run_date` and creates a `transactions` row each time it fires. |
+| `budgets` | N—1 to `users`, `categories` | Unique per `(user, category, month, year)`. Spent/remaining/percentage are computed on read from `transactions`, never stored. |
+| `goals` | N—1 to `users` | `current_saved_amount` is a running total kept in sync with `goal_contributions`. |
+| `goal_contributions` | N—1 to `goals`, cascades on goal delete | Append-only ledger of "Add Money to Goal" actions. |
+| `bills` | N—1 to `users`, optional `categories` | `recurring_type = NULL` means one-time; otherwise a reminder/instance is regenerated per period (Phase 8). |
+| `notifications` | N—1 to `users`, cascades on user delete | In-app notification center; `is_read` + `(user_id, is_read)` index power the unread-count badge. |
+| `password_reset_tokens` / `email_verification_tokens` | N—1 to `users`, cascade on user delete | Multiple rows may accumulate per user over time; only the newest unused, unexpired token is treated as valid (enforced in service logic, Phase 3). `token` is unique + indexed for O(1) lookup. |
+
+## Design decisions
+
+- **No bidirectional collections on `User`/`Account`/`Category`/`Goal`.** Every child entity holds a `@ManyToOne` back to its parent, but parents do not expose `@OneToMany` collections. This avoids accidentally loading a user's entire transaction history through JPA entity graphs — later phases fetch children explicitly through paginated repository queries instead.
+- **Money is `DECIMAL(19,4)` / `BigDecimal`**, never floating point, to avoid rounding errors in financial calculations.
+- **`FetchType.LAZY` on every `@ManyToOne`** (except `User.roles`, which is small and needed on every authenticated request) to keep queries predictable.
+- **Ownership FKs are not `ON DELETE CASCADE`** for accounts/categories/transactions/recurring_transactions/budgets/goals/bills — a user is disabled, not hard-deleted, so cascading destruction from `users` was not needed. Purely dependent child rows (`user_roles`, `notifications`, `*_tokens`, `goal_contributions`) do cascade, since they have no independent meaning without their parent.
+- **Cross-reference FKs (transaction → account/category, budget → category, bill → category) have no cascade** — deleting an account or category that is still referenced must go through service-layer validation (Phase 4/5), not a silent DB cascade.
+- **Auditing** (`created_at`/`updated_at`) is handled once via two `@MappedSuperclass` bases (`AuditableEntity`, `CreatedOnlyEntity`) and Spring Data's `@EnableJpaAuditing`, rather than repeating `@PrePersist`/`@PreUpdate` on every entity.
+
+## How this was verified
+
+With the `dev` profile active (`spring.jpa.hibernate.ddl-auto=update`) and a
+MySQL instance reachable at the configured `DB_HOST`/`DB_PORT`/`DB_NAME`,
+starting the backend (`./mvnw spring-boot:run`) creates all 14 tables.
+Confirm with:
+
+```sql
+SHOW TABLES;
+```
+
+Expected output: `accounts, bills, budgets, categories, email_verification_tokens,
+goal_contributions, goals, notifications, password_reset_tokens,
+recurring_transactions, roles, transactions, user_roles, users` (14 rows).

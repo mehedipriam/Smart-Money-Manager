@@ -23,7 +23,7 @@ Budget Planner/
 This project is being built phase by phase:
 
 1. **Project Setup** ✅
-2. Full Database Schema Creation
+2. **Full Database Schema Creation** ✅
 3. Authentication
 4. Account Management
 5. Category Management
@@ -64,7 +64,23 @@ npm run dev
 Runs on `http://localhost:5173`. Copy `.env.example` to `.env` to configure `VITE_API_BASE_URL`
 (defaults to `http://localhost:8080/api`).
 
+### Database (Phase 2 — complete)
+
+The full schema (all 14 tables) is defined as JPA entities under
+`backend/src/main/java/com/smartmoneymanager/backend/entity/`, with a mirrored
+reference DDL script at `backend/src/main/resources/db/full_schema.sql` and a
+full ER diagram + design notes at `docs/PHASE_2_DATABASE_SCHEMA.md`.
+
+With a MySQL instance reachable using the `DB_*` environment variables above,
+starting the backend (`./mvnw spring-boot:run`, `dev` profile) creates every
+table automatically via Hibernate (`spring.jpa.hibernate.ddl-auto=update`).
+This was verified end-to-end against a real MySQL 8.4 instance — `SHOW TABLES`
+returns all 14 expected tables with their foreign keys and indexes in place.
+
+From Phase 3 onward the schema is treated as fixed; further phases only add
+repository/service/DTO/mapper/controller code on top of it.
+
 ---
 
-Database setup, full installation steps, API documentation, and deployment instructions will be
-added as their corresponding phases (2, 11, 16) are completed.
+Full installation steps, API documentation, and deployment instructions will be
+added as their corresponding phases (11, 16) are completed.
