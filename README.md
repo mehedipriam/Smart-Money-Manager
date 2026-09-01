@@ -26,7 +26,7 @@ This project is being built phase by phase:
 2. **Full Database Schema Creation** ✅
 3. **Authentication** ✅
 4. **Account Management** ✅
-5. Category Management
+5. **Category Management** ✅
 6. Transaction Management
 7. Dashboard
 8. Budget Management
@@ -116,6 +116,21 @@ history and reports.
 
 The frontend adds an Accounts page (account cards, create/edit/delete/transfer
 modals) and simple top navigation between Accounts and Profile.
+
+### Category Management (Phase 5 — complete)
+
+16 default income/expense categories (matching the spec's list) are seeded
+automatically on startup, visible to every user, and can never be edited or
+deleted (`400` if attempted, IDOR-safe `404` for another user's custom
+category). Users can create/edit/delete their own custom categories; a
+category's type (income/expense) is fixed at creation so it can't drift out
+of sync with anything tagged with it later. Deleting a category still in use
+(once transactions/budgets/bills reference it, from Phase 6 onward) fails
+with a `409` instead of an orphaned foreign key.
+
+The frontend adds a Categories page (expense/income columns, default
+categories shown with a badge and no edit/delete controls) and a
+"Categories" nav link.
 
 ---
 

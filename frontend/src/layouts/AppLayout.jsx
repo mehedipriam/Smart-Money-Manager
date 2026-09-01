@@ -7,8 +7,8 @@ import './AppLayout.css';
 /**
  * Minimal authenticated shell (topbar + simple nav). The full dark sidebar
  * from spec section 14 is built out in Phase 7 once Budgets/Goals/Bills/
- * Reports/Categories all exist — until then a sidebar would be mostly dead
- * links, so this grows one real nav item per phase instead.
+ * Reports all exist — until then a sidebar would be mostly dead links, so
+ * this grows one real nav item per phase instead.
  */
 function AppLayout() {
   const { user, logout } = useAuth();
@@ -30,6 +30,9 @@ function AppLayout() {
         <nav className="app-layout__nav">
           <NavLink to="/accounts" className={({ isActive }) => (isActive ? 'active' : undefined)}>
             Accounts
+          </NavLink>
+          <NavLink to="/categories" className={({ isActive }) => (isActive ? 'active' : undefined)}>
+            Categories
           </NavLink>
           <NavLink to="/profile" className={({ isActive }) => (isActive ? 'active' : undefined)}>
             Profile
