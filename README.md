@@ -37,9 +37,15 @@ A full-stack personal finance and expense tracking web application — accounts,
 - Visual alerts at 80% used and over-budget (real push notifications land in Phase 12)
 - Dashboard's Budget Overview shows live progress for the current month
 
+**Savings Goals**
+- Create goals with a target amount, optional target date, and description
+- "Add money" deposits, kept as an auditable contribution history per goal
+- Progress bar with percentage and remaining amount; auto-completes when the target is reached
+- Filter by status: Active, Completed, Cancelled
+
 Every resource is scoped to the authenticated user — one user can never read or modify another user's data.
 
-**Planned:** budgets, savings goals, bills & reminders, reports, notifications, an admin panel, and Docker Compose for one-command startup — each has a placeholder page in the sidebar already. See [Roadmap](#roadmap).
+**Planned:** bills & reminders, reports, notifications, an admin panel, and Docker Compose for one-command startup — each has a placeholder page in the sidebar already. See [Roadmap](#roadmap).
 
 ## Tech Stack
 
@@ -137,6 +143,9 @@ All responses use a standard envelope: `{ success, message, data, errors, timest
 **Budgets** — `/api/budgets` *(authenticated)*
 `GET /?month=&year=` (both default to the current month) · `POST /` · `PUT /{id}` · `DELETE /{id}`
 
+**Goals** — `/api/goals` *(authenticated)*
+`GET /` (optional `?status=ACTIVE|COMPLETED|CANCELLED`) · `GET /{id}` · `POST /` · `PUT /{id}` · `DELETE /{id}` · `POST /{id}/contributions` · `GET /{id}/contributions`
+
 ## Roadmap
 
 - [x] Project setup
@@ -147,7 +156,7 @@ All responses use a standard envelope: `{ success, message, data, errors, timest
 - [x] Transaction management
 - [x] Dashboard
 - [x] Budget management
-- [ ] Savings goals
+- [x] Savings goals
 - [ ] Bills and reminders
 - [ ] Reports and analytics
 - [ ] Notifications
