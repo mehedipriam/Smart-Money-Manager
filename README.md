@@ -19,9 +19,15 @@ A full-stack personal finance and expense tracking web application — accounts,
 - 16 default income/expense categories, seeded automatically, read-only
 - Create, edit, delete your own custom categories
 
+**Transactions**
+- Add, edit, delete income/expense transactions; every change keeps the account balance in sync
+- Search, filter (date range, category, type, account, amount range), sort, and paginate
+- Recurring transactions (daily/weekly/monthly/yearly), generated automatically on schedule — with catch-up if the app was offline when one or more occurrences were due
+- Account-to-account transfers are recorded as a real linked pair of transactions (tagged "Transfer"), not just a balance move
+
 Every resource is scoped to the authenticated user — one user can never read or modify another user's data.
 
-**Planned:** transactions, a dashboard with charts, budgets, savings goals, bills & reminders, reports, notifications, an admin panel, and Docker Compose for one-command startup. See [Roadmap](#roadmap).
+**Planned:** a dashboard with charts, budgets, savings goals, bills & reminders, reports, notifications, an admin panel, and Docker Compose for one-command startup. See [Roadmap](#roadmap).
 
 ## Tech Stack
 
@@ -88,6 +94,7 @@ Without a real SMTP server configured, verification and password-reset emails ar
 | `JWT_REFRESH_EXPIRATION_MS` | Refresh token lifetime (ms) | `604800000` (7d) |
 | `FRONTEND_URL` | Used for CORS and links in emails | `http://localhost:5173` |
 | `MAIL_HOST` / `MAIL_PORT` / `MAIL_USERNAME` / `MAIL_PASSWORD` | SMTP config | unset (links are logged instead) |
+| `RECURRING_TRANSACTIONS_CRON` | Cron schedule for generating due recurring transactions | `0 5 0 * * *` (daily at 00:05) |
 | `VITE_API_BASE_URL` (frontend `.env`) | Backend API base URL | `http://localhost:8080/api` |
 
 ## API Reference
@@ -106,6 +113,12 @@ All responses use a standard envelope: `{ success, message, data, errors, timest
 **Categories** — `/api/categories` *(authenticated)*
 `GET /` (optional `?type=INCOME|EXPENSE`) · `POST /` · `PUT /{id}` · `DELETE /{id}`
 
+**Transactions** — `/api/transactions` *(authenticated)*
+`GET /` (paginated; `?type=&accountId=&categoryId=&dateFrom=&dateTo=&amountFrom=&amountTo=&search=&sortBy=&sortDir=&page=&size=`) · `GET /{id}` · `POST /` · `PUT /{id}` · `DELETE /{id}`
+
+**Recurring transactions** — `/api/recurring-transactions` *(authenticated)*
+`GET /` · `POST /` · `PUT /{id}` · `DELETE /{id}`
+
 ## Roadmap
 
 - [x] Project setup
@@ -113,7 +126,7 @@ All responses use a standard envelope: `{ success, message, data, errors, timest
 - [x] Authentication
 - [x] Account management
 - [x] Category management
-- [ ] Transaction management
+- [x] Transaction management
 - [ ] Dashboard
 - [ ] Budget management
 - [ ] Savings goals

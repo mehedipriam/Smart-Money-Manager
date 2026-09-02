@@ -6,6 +6,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
 
 import com.smartmoneymanager.backend.entity.Category;
+import static com.smartmoneymanager.backend.entity.Category.TRANSFER_CATEGORY_NAME;
 import com.smartmoneymanager.backend.entity.Role;
 import com.smartmoneymanager.backend.entity.enums.CategoryType;
 import com.smartmoneymanager.backend.entity.enums.RoleName;
@@ -44,7 +45,11 @@ public class DataInitializer implements CommandLineRunner {
             new DefaultCategory("Business", CategoryType.INCOME, "🏢", "#0ea5e9"),
             new DefaultCategory("Investment", CategoryType.INCOME, "📈", "#10b981"),
             new DefaultCategory("Gift", CategoryType.INCOME, "🎁", "#f43f5e"),
-            new DefaultCategory("Others", CategoryType.INCOME, "📦", "#6b7280"));
+            new DefaultCategory("Others", CategoryType.INCOME, "📦", "#6b7280"),
+            // System category used to tag the two transaction rows an account-to-account
+            // transfer writes (see AccountServiceImpl.transfer / TRANSFER_CATEGORY_NAME).
+            new DefaultCategory(TRANSFER_CATEGORY_NAME, CategoryType.EXPENSE, "🔁", "#64748b"),
+            new DefaultCategory(TRANSFER_CATEGORY_NAME, CategoryType.INCOME, "🔁", "#64748b"));
 
     private final RoleRepository roleRepository;
     private final CategoryRepository categoryRepository;

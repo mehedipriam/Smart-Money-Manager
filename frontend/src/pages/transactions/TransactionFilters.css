@@ -1,0 +1,11 @@
+.txn-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 16px;
+}
+
+.txn-filters .field__input {
+  margin: 0;
+}

@@ -1,6 +1,7 @@
 package com.smartmoneymanager.backend.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,4 +20,6 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     List<Category> findAllVisibleToUserByType(@Param("userId") Long userId, @Param("type") CategoryType type);
 
     boolean existsByNameAndTypeAndUserIsNull(String name, CategoryType type);
+
+    Optional<Category> findByNameAndTypeAndUserIsNull(String name, CategoryType type);
 }

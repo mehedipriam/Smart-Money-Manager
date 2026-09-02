@@ -1,0 +1,58 @@
+.transactions-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.transactions-page__header h1 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.txn-sort {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.txn-sort select {
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.txn-table__actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.txn-table__actions button {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-primary-dark);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.txn-table__actions button.txn-table__danger {
+  color: var(--color-danger);
+}
+
+.txn-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}

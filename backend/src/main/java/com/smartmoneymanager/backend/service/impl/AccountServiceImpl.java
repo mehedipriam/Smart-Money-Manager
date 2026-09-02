@@ -1,6 +1,7 @@
 package com.smartmoneymanager.backend.service.impl;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -13,14 +14,20 @@ import com.smartmoneymanager.backend.dto.request.UpdateAccountRequest;
 import com.smartmoneymanager.backend.dto.response.AccountResponse;
 import com.smartmoneymanager.backend.dto.response.TransferResponse;
 import com.smartmoneymanager.backend.entity.Account;
+import com.smartmoneymanager.backend.entity.Category;
+import com.smartmoneymanager.backend.entity.User;
+import com.smartmoneymanager.backend.entity.enums.CategoryType;
+import com.smartmoneymanager.backend.entity.enums.TransactionType;
 import com.smartmoneymanager.backend.exception.InsufficientBalanceException;
 import com.smartmoneymanager.backend.exception.InvalidOperationException;
 import com.smartmoneymanager.backend.exception.ResourceInUseException;
 import com.smartmoneymanager.backend.exception.ResourceNotFoundException;
 import com.smartmoneymanager.backend.mapper.AccountMapper;
 import com.smartmoneymanager.backend.repository.AccountRepository;
+import com.smartmoneymanager.backend.repository.CategoryRepository;
 import com.smartmoneymanager.backend.repository.UserRepository;
 import com.smartmoneymanager.backend.service.AccountService;
+import com.smartmoneymanager.backend.service.TransactionService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,7 +38,9 @@ public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
     private final AccountMapper accountMapper;
+    private final TransactionService transactionService;
 
     @Override
     @Transactional(readOnly = true)
@@ -94,21 +103,35 @@ public class AccountServiceImpl implements AccountService {
             throw new InsufficientBalanceException("Insufficient balance in the source account");
         }
 
-        fromAccount.setCurrentBalance(fromAccount.getCurrentBalance().subtract(amount));
-        toAccount.setCurrentBalance(toAccount.getCurrentBalance().add(amount));
+        User user = userRepository.getReferenceById(userId);
+        LocalDate today = LocalDate.now();
+        Category transferExpenseCategory = findTransferCategory(CategoryType.EXPENSE);
+        Category transferIncomeCategory = findTransferCategory(CategoryType.INCOME);
 
-        accountRepository.save(fromAccount);
-        accountRepository.save(toAccount);
+        // A transfer is recorded as two linked transactions — an EXPENSE leaving
+        // fromAccount and an INCOME arriving in toAccount, both tagged with the
+        // system "Transfer" category — rather than a separate ledger concept, so
+        // transfers show up in transaction history/reports/budgets like anything
+        // else. Each leg's own balance effect is applied by createSystemTransaction,
+        // so the two calls together move the money exactly as a direct balance
+        // edit would have.
+        transactionService.createSystemTransaction(
+                user, fromAccount, transferExpenseCategory, TransactionType.EXPENSE, amount, today,
+                "Transfer to " + toAccount.getAccountName(), request.getNote());
+        transactionService.createSystemTransaction(
+                user, toAccount, transferIncomeCategory, TransactionType.INCOME, amount, today,
+                "Transfer from " + fromAccount.getAccountName(), request.getNote());
 
-        // NOTE: this only moves the balances. Once Category Management (Phase 5) and
-        // Transaction Management (Phase 6) exist, this should also write the two
-        // linked transaction rows (EXPENSE on fromAccount, INCOME on toAccount,
-        // tagged with a "Transfer" category) described in docs/PHASE_2_DATABASE_SCHEMA.md,
-        // so transfers show up in transaction history and reports.
         return TransferResponse.builder()
                 .fromAccount(accountMapper.toResponse(fromAccount))
                 .toAccount(accountMapper.toResponse(toAccount))
                 .build();
+    }
+
+    private Category findTransferCategory(CategoryType type) {
+        return categoryRepository.findByNameAndTypeAndUserIsNull(Category.TRANSFER_CATEGORY_NAME, type)
+                .orElseThrow(() -> new IllegalStateException(
+                        "System 'Transfer' category (" + type + ") is not seeded"));
     }
 
     private Account findOwnedAccount(Long userId, Long accountId) {

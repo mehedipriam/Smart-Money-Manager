@@ -34,6 +34,9 @@ function AppLayout() {
           <NavLink to="/categories" className={({ isActive }) => (isActive ? 'active' : undefined)}>
             Categories
           </NavLink>
+          <NavLink to="/transactions" className={({ isActive }) => (isActive ? 'active' : undefined)}>
+            Transactions
+          </NavLink>
           <NavLink to="/profile" className={({ isActive }) => (isActive ? 'active' : undefined)}>
             Profile
           </NavLink>

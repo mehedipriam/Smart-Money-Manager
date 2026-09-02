@@ -3,6 +3,8 @@ import Home from '../pages/Home.jsx';
 import ProfilePage from '../pages/ProfilePage.jsx';
 import AccountsPage from '../pages/accounts/AccountsPage.jsx';
 import CategoriesPage from '../pages/categories/CategoriesPage.jsx';
+import TransactionsPage from '../pages/transactions/TransactionsPage.jsx';
+import RecurringTransactionsPage from '../pages/transactions/RecurringTransactionsPage.jsx';
 import LoginPage from '../pages/auth/LoginPage.jsx';
 import RegisterPage from '../pages/auth/RegisterPage.jsx';
 import RegistrationSuccessPage from '../pages/auth/RegistrationSuccessPage.jsx';
@@ -41,6 +43,8 @@ function AppRoutes() {
         <Route element={<AppLayout />}>
           <Route path="/accounts" element={<AccountsPage />} />
           <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/transactions" element={<TransactionsPage />} />
+          <Route path="/transactions/recurring" element={<RecurringTransactionsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Route>

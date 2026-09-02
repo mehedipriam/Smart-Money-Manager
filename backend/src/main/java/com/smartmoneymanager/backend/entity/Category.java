@@ -34,6 +34,13 @@ import lombok.Setter;
 @Builder
 public class Category extends AuditableEntity {
 
+    /**
+     * Name of the system default category (one EXPENSE row, one INCOME row)
+     * that account-to-account transfers are tagged with. See
+     * {@code AccountServiceImpl.transfer} and {@code DataInitializer}.
+     */
+    public static final String TRANSFER_CATEGORY_NAME = "Transfer";
+
     /** Null for default/global categories that belong to no specific user. */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
