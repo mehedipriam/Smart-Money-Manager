@@ -41,3 +41,20 @@
   font-size: 0.85rem;
   font-weight: 600;
 }
+
+.dashboard-budgets {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dashboard-budgets__label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+}
+
+.dashboard-budgets__label span:last-child {
+  color: var(--color-text-muted);
+}

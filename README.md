@@ -32,6 +32,11 @@ A full-stack personal finance and expense tracking web application — accounts,
 - Recent transactions
 - Full app shell: dark sidebar, light/dark mode toggle (persisted per browser), notification icon (wired up once Phase 12 adds real notifications)
 
+**Budgets**
+- Monthly, per-category budgets (expense categories only) with used/remaining amounts and usage %
+- Visual alerts at 80% used and over-budget (real push notifications land in Phase 12)
+- Dashboard's Budget Overview shows live progress for the current month
+
 Every resource is scoped to the authenticated user — one user can never read or modify another user's data.
 
 **Planned:** budgets, savings goals, bills & reminders, reports, notifications, an admin panel, and Docker Compose for one-command startup — each has a placeholder page in the sidebar already. See [Roadmap](#roadmap).
@@ -129,6 +134,9 @@ All responses use a standard envelope: `{ success, message, data, errors, timest
 **Dashboard** — `/api/dashboard` *(authenticated)*
 `GET /?range=TODAY|THIS_WEEK|THIS_MONTH|LAST_MONTH|THIS_YEAR|CUSTOM&startDate=&endDate=` — `startDate`/`endDate` required only when `range=CUSTOM`.
 
+**Budgets** — `/api/budgets` *(authenticated)*
+`GET /?month=&year=` (both default to the current month) · `POST /` · `PUT /{id}` · `DELETE /{id}`
+
 ## Roadmap
 
 - [x] Project setup
@@ -138,7 +146,7 @@ All responses use a standard envelope: `{ success, message, data, errors, timest
 - [x] Category management
 - [x] Transaction management
 - [x] Dashboard
-- [ ] Budget management
+- [x] Budget management
 - [ ] Savings goals
 - [ ] Bills and reminders
 - [ ] Reports and analytics

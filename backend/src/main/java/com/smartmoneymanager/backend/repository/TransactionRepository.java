@@ -23,6 +23,12 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
     BigDecimal sumAmount(@Param("userId") Long userId, @Param("type") TransactionType type,
             @Param("start") LocalDate start, @Param("end") LocalDate end);
 
+    @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t "
+            + "WHERE t.user.id = :userId AND t.category.id = :categoryId AND t.type = :type "
+            + "AND t.transactionDate BETWEEN :start AND :end")
+    BigDecimal sumAmountByCategory(@Param("userId") Long userId, @Param("categoryId") Long categoryId,
+            @Param("type") TransactionType type, @Param("start") LocalDate start, @Param("end") LocalDate end);
+
     @Query("SELECT new com.smartmoneymanager.backend.dto.projection.TransactionAmountProjection(t.type, t.amount, t.transactionDate) "
             + "FROM Transaction t WHERE t.user.id = :userId AND t.transactionDate BETWEEN :start AND :end")
     List<TransactionAmountProjection> findAmountsInRange(
