@@ -30,7 +30,7 @@ function LoginPage() {
     try {
       await login(form);
       toast.success('Welcome back!');
-      const redirectTo = location.state?.from?.pathname || '/accounts';
+      const redirectTo = location.state?.from?.pathname || '/dashboard';
       navigate(redirectTo, { replace: true });
     } catch (err) {
       const message = getErrorMessage(err, 'Invalid email or password');

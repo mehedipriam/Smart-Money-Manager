@@ -25,9 +25,16 @@ A full-stack personal finance and expense tracking web application — accounts,
 - Recurring transactions (daily/weekly/monthly/yearly), generated automatically on schedule — with catch-up if the app was offline when one or more occurrences were due
 - Account-to-account transfers are recorded as a real linked pair of transactions (tagged "Transfer"), not just a balance move
 
+**Dashboard**
+- Total balance, income, expenses, and monthly savings, each with a period-over-period % change
+- Date range filter: Today, This Week, This Month, Last Month, This Year, or a custom range
+- Spending-by-category donut chart and an income/expense/savings cash-flow chart (daily or monthly buckets depending on the range)
+- Recent transactions
+- Full app shell: dark sidebar, light/dark mode toggle (persisted per browser), notification icon (wired up once Phase 12 adds real notifications)
+
 Every resource is scoped to the authenticated user — one user can never read or modify another user's data.
 
-**Planned:** a dashboard with charts, budgets, savings goals, bills & reminders, reports, notifications, an admin panel, and Docker Compose for one-command startup. See [Roadmap](#roadmap).
+**Planned:** budgets, savings goals, bills & reminders, reports, notifications, an admin panel, and Docker Compose for one-command startup — each has a placeholder page in the sidebar already. See [Roadmap](#roadmap).
 
 ## Tech Stack
 
@@ -119,6 +126,9 @@ All responses use a standard envelope: `{ success, message, data, errors, timest
 **Recurring transactions** — `/api/recurring-transactions` *(authenticated)*
 `GET /` · `POST /` · `PUT /{id}` · `DELETE /{id}`
 
+**Dashboard** — `/api/dashboard` *(authenticated)*
+`GET /?range=TODAY|THIS_WEEK|THIS_MONTH|LAST_MONTH|THIS_YEAR|CUSTOM&startDate=&endDate=` — `startDate`/`endDate` required only when `range=CUSTOM`.
+
 ## Roadmap
 
 - [x] Project setup
@@ -127,7 +137,7 @@ All responses use a standard envelope: `{ success, message, data, errors, timest
 - [x] Account management
 - [x] Category management
 - [x] Transaction management
-- [ ] Dashboard
+- [x] Dashboard
 - [ ] Budget management
 - [ ] Savings goals
 - [ ] Bills and reminders

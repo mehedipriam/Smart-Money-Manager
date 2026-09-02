@@ -1,6 +1,8 @@
 import { Routes, Route } from 'react-router-dom';
 import Home from '../pages/Home.jsx';
 import ProfilePage from '../pages/ProfilePage.jsx';
+import ComingSoonPage from '../pages/ComingSoonPage.jsx';
+import DashboardPage from '../pages/dashboard/DashboardPage.jsx';
 import AccountsPage from '../pages/accounts/AccountsPage.jsx';
 import CategoriesPage from '../pages/categories/CategoriesPage.jsx';
 import TransactionsPage from '../pages/transactions/TransactionsPage.jsx';
@@ -41,11 +43,16 @@ function AppRoutes() {
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/accounts" element={<AccountsPage />} />
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/transactions" element={<TransactionsPage />} />
           <Route path="/transactions/recurring" element={<RecurringTransactionsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/budgets" element={<ComingSoonPage title="Budgets" phase="Phase 8" />} />
+          <Route path="/goals" element={<ComingSoonPage title="Savings Goals" phase="Phase 9" />} />
+          <Route path="/bills" element={<ComingSoonPage title="Bills & Reminders" phase="Phase 10" />} />
+          <Route path="/reports" element={<ComingSoonPage title="Reports" phase="Phase 11" />} />
         </Route>
       </Route>
     </Routes>

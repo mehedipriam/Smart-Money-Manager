@@ -1,18 +1,25 @@
-import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
-import Button from '../components/common/Button.jsx';
+import { useTheme } from '../context/ThemeContext.jsx';
 import './AppLayout.css';
 
-/**
- * Minimal authenticated shell (topbar + simple nav). The full dark sidebar
- * from spec section 14 is built out in Phase 7 once Budgets/Goals/Bills/
- * Reports all exist — until then a sidebar would be mostly dead links, so
- * this grows one real nav item per phase instead.
- */
+const NAV_ITEMS = [
+  { to: '/dashboard', icon: '📊', label: 'Dashboard' },
+  { to: '/transactions', icon: '💳', label: 'Transactions' },
+  { to: '/accounts', icon: '🏦', label: 'Accounts' },
+  { to: '/budgets', icon: '🧮', label: 'Budgets' },
+  { to: '/goals', icon: '🎯', label: 'Goals' },
+  { to: '/bills', icon: '🧾', label: 'Bills & Reminders' },
+  { to: '/reports', icon: '📈', label: 'Reports' },
+  { to: '/categories', icon: '🏷️', label: 'Categories' },
+  { to: '/profile', icon: '⚙️', label: 'Settings' },
+];
+
 function AppLayout() {
   const { user, logout } = useAuth();
   const toast = useToast();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   async function handleLogout() {
@@ -22,35 +29,56 @@ function AppLayout() {
   }
 
   return (
-    <div className="app-layout">
-      <header className="app-layout__topbar">
-        <Link to="/accounts" className="app-layout__brand">
-          Smart Money Manager
-        </Link>
-        <nav className="app-layout__nav">
-          <NavLink to="/accounts" className={({ isActive }) => (isActive ? 'active' : undefined)}>
-            Accounts
-          </NavLink>
-          <NavLink to="/categories" className={({ isActive }) => (isActive ? 'active' : undefined)}>
-            Categories
-          </NavLink>
-          <NavLink to="/transactions" className={({ isActive }) => (isActive ? 'active' : undefined)}>
-            Transactions
-          </NavLink>
-          <NavLink to="/profile" className={({ isActive }) => (isActive ? 'active' : undefined)}>
-            Profile
-          </NavLink>
+    <div className="app-shell">
+      <aside className="app-sidebar">
+        <div className="app-sidebar__brand">Smart Money Manager</div>
+        <nav className="app-sidebar__nav">
+          {NAV_ITEMS.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === '/dashboard'}
+              className={({ isActive }) => `app-sidebar__link${isActive ? ' active' : ''}`}
+            >
+              <span className="app-sidebar__icon">{item.icon}</span>
+              {item.label}
+            </NavLink>
+          ))}
         </nav>
-        <div className="app-layout__user">
-          <span>{user?.fullName}</span>
-          <Button variant="ghost" onClick={handleLogout} style={{ width: 'auto' }}>
-            Log out
-          </Button>
-        </div>
-      </header>
-      <main className="app-layout__content">
-        <Outlet />
-      </main>
+      </aside>
+
+      <div className="app-main">
+        <header className="app-topbar">
+          <div />
+          <div className="app-topbar__actions">
+            <button
+              type="button"
+              className="app-topbar__icon-btn"
+              aria-label="Notifications"
+              onClick={() => toast.info('Notifications are coming in a later phase.')}
+            >
+              🔔
+            </button>
+            <button
+              type="button"
+              className="app-topbar__icon-btn"
+              aria-label="Toggle dark mode"
+              onClick={toggleTheme}
+            >
+              {theme === 'dark' ? '☀️' : '🌙'}
+            </button>
+            <NavLink to="/profile" className="app-topbar__user">
+              {user?.fullName}
+            </NavLink>
+            <button type="button" className="app-topbar__logout" onClick={handleLogout}>
+              Log out
+            </button>
+          </div>
+        </header>
+        <main className="app-content">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }

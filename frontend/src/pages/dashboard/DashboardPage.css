@@ -1,0 +1,43 @@
+.dashboard-page__header {
+  margin-bottom: 16px;
+}
+
+.dashboard-page__header h1 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.dashboard-grid h2 {
+  margin: 0 0 12px;
+  font-size: 1rem;
+}
+
+.dashboard-page__section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.dashboard-page__section-header h2 {
+  margin: 0;
+}
+
+.dashboard-page__section-header a {
+  font-size: 0.85rem;
+  font-weight: 600;
+}

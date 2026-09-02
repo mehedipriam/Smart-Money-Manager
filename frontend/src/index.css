@@ -23,8 +23,9 @@
   color-scheme: light;
 }
 
+/* Pre-JS / no-JS fallback: follow the OS preference until ThemeProvider sets data-theme explicitly. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     --color-primary: #22c55e;
     --color-primary-dark: #16a34a;
     --color-primary-light: #14532d;
@@ -36,6 +37,20 @@
 
     color-scheme: dark;
   }
+}
+
+/* Explicit user toggle (persisted via ThemeContext) wins in both directions. */
+:root[data-theme='dark'] {
+  --color-primary: #22c55e;
+  --color-primary-dark: #16a34a;
+  --color-primary-light: #14532d;
+  --color-bg: #0f1512;
+  --color-surface: #171f1a;
+  --color-text: #f3f4f6;
+  --color-text-muted: #9ca3af;
+  --color-border: #2a332d;
+
+  color-scheme: dark;
 }
 
 * {

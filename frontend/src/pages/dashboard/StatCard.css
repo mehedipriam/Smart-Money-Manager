@@ -1,0 +1,37 @@
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px;
+}
+
+.stat-card__label {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.stat-card__amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.stat-card__change {
+  font-size: 0.8rem;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.stat-card__change--up {
+  color: var(--color-success);
+}
+
+.stat-card__change--down {
+  color: var(--color-danger);
+}
+
+.stat-card__change--neutral {
+  color: var(--color-text-muted);
+}
