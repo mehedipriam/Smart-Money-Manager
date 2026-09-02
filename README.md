@@ -43,9 +43,15 @@ A full-stack personal finance and expense tracking web application — accounts,
 - Progress bar with percentage and remaining amount; auto-completes when the target is reached
 - Filter by status: Active, Completed, Cancelled
 
+**Bills & Reminders**
+- One-time or recurring bills (daily/weekly/monthly/yearly) with an optional expense category
+- PENDING bills automatically flip to OVERDUE once their due date passes
+- Mark as paid — recurring bills auto-generate their next occurrence when paid
+- Upcoming (unpaid) bills shown on the Dashboard with a one-click "mark paid"
+
 Every resource is scoped to the authenticated user — one user can never read or modify another user's data.
 
-**Planned:** bills & reminders, reports, notifications, an admin panel, and Docker Compose for one-command startup — each has a placeholder page in the sidebar already. See [Roadmap](#roadmap).
+**Planned:** reports, notifications, an admin panel, and Docker Compose for one-command startup — each has a placeholder page in the sidebar already. See [Roadmap](#roadmap).
 
 ## Tech Stack
 
@@ -146,6 +152,9 @@ All responses use a standard envelope: `{ success, message, data, errors, timest
 **Goals** — `/api/goals` *(authenticated)*
 `GET /` (optional `?status=ACTIVE|COMPLETED|CANCELLED`) · `GET /{id}` · `POST /` · `PUT /{id}` · `DELETE /{id}` · `POST /{id}/contributions` · `GET /{id}/contributions`
 
+**Bills** — `/api/bills` *(authenticated)*
+`GET /` (optional `?status=PENDING|OVERDUE|PAID`) · `GET /upcoming?limit=` · `GET /{id}` · `POST /` · `PUT /{id}` · `DELETE /{id}` · `POST /{id}/pay`
+
 ## Roadmap
 
 - [x] Project setup
@@ -157,7 +166,7 @@ All responses use a standard envelope: `{ success, message, data, errors, timest
 - [x] Dashboard
 - [x] Budget management
 - [x] Savings goals
-- [ ] Bills and reminders
+- [x] Bills and reminders
 - [ ] Reports and analytics
 - [ ] Notifications
 - [ ] Admin panel

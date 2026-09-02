@@ -9,6 +9,7 @@ import TransactionsPage from '../pages/transactions/TransactionsPage.jsx';
 import RecurringTransactionsPage from '../pages/transactions/RecurringTransactionsPage.jsx';
 import BudgetsPage from '../pages/budgets/BudgetsPage.jsx';
 import GoalsPage from '../pages/goals/GoalsPage.jsx';
+import BillsPage from '../pages/bills/BillsPage.jsx';
 import LoginPage from '../pages/auth/LoginPage.jsx';
 import RegisterPage from '../pages/auth/RegisterPage.jsx';
 import RegistrationSuccessPage from '../pages/auth/RegistrationSuccessPage.jsx';
@@ -53,7 +54,7 @@ function AppRoutes() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/budgets" element={<BudgetsPage />} />
           <Route path="/goals" element={<GoalsPage />} />
-          <Route path="/bills" element={<ComingSoonPage title="Bills & Reminders" phase="Phase 10" />} />
+          <Route path="/bills" element={<BillsPage />} />
           <Route path="/reports" element={<ComingSoonPage title="Reports" phase="Phase 11" />} />
         </Route>
       </Route>
