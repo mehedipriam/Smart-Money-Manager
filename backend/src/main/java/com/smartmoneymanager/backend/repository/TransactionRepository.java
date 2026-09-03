@@ -37,10 +37,16 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
     @Query("SELECT new com.smartmoneymanager.backend.dto.response.SpendingByCategoryResponse("
             + "c.id, c.name, c.icon, c.color, SUM(t.amount)) "
             + "FROM Transaction t JOIN t.category c "
-            + "WHERE t.user.id = :userId AND t.type = com.smartmoneymanager.backend.entity.enums.TransactionType.EXPENSE "
+            + "WHERE t.user.id = :userId AND t.type = :type "
             + "AND t.transactionDate BETWEEN :start AND :end "
             + "GROUP BY c.id, c.name, c.icon, c.color "
             + "ORDER BY SUM(t.amount) DESC")
     List<com.smartmoneymanager.backend.dto.response.SpendingByCategoryResponse> findSpendingByCategory(
-            @Param("userId") Long userId, @Param("start") LocalDate start, @Param("end") LocalDate end);
+            @Param("userId") Long userId, @Param("type") TransactionType type,
+            @Param("start") LocalDate start, @Param("end") LocalDate end);
+
+    @Query("SELECT t FROM Transaction t JOIN FETCH t.category JOIN FETCH t.account "
+            + "WHERE t.user.id = :userId AND t.transactionDate BETWEEN :start AND :end "
+            + "ORDER BY t.transactionDate ASC, t.id ASC")
+    List<Transaction> findForExport(@Param("userId") Long userId, @Param("start") LocalDate start, @Param("end") LocalDate end);
 }

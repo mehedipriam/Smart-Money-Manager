@@ -1,7 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import Home from '../pages/Home.jsx';
 import ProfilePage from '../pages/ProfilePage.jsx';
-import ComingSoonPage from '../pages/ComingSoonPage.jsx';
 import DashboardPage from '../pages/dashboard/DashboardPage.jsx';
 import AccountsPage from '../pages/accounts/AccountsPage.jsx';
 import CategoriesPage from '../pages/categories/CategoriesPage.jsx';
@@ -10,6 +9,7 @@ import RecurringTransactionsPage from '../pages/transactions/RecurringTransactio
 import BudgetsPage from '../pages/budgets/BudgetsPage.jsx';
 import GoalsPage from '../pages/goals/GoalsPage.jsx';
 import BillsPage from '../pages/bills/BillsPage.jsx';
+import ReportsPage from '../pages/reports/ReportsPage.jsx';
 import LoginPage from '../pages/auth/LoginPage.jsx';
 import RegisterPage from '../pages/auth/RegisterPage.jsx';
 import RegistrationSuccessPage from '../pages/auth/RegistrationSuccessPage.jsx';
@@ -55,7 +55,7 @@ function AppRoutes() {
           <Route path="/budgets" element={<BudgetsPage />} />
           <Route path="/goals" element={<GoalsPage />} />
           <Route path="/bills" element={<BillsPage />} />
-          <Route path="/reports" element={<ComingSoonPage title="Reports" phase="Phase 11" />} />
+          <Route path="/reports" element={<ReportsPage />} />
         </Route>
       </Route>
     </Routes>

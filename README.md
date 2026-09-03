@@ -49,9 +49,14 @@ A full-stack personal finance and expense tracking web application — accounts,
 - Mark as paid — recurring bills auto-generate their next occurrence when paid
 - Upcoming (unpaid) bills shown on the Dashboard with a one-click "mark paid"
 
+**Reports & Analytics**
+- Monthly/yearly/custom financial report: total income, total expenses, net savings, savings rate, highest expense category, average monthly expense — each vs. the equivalent prior period
+- Expense and income category breakdowns (pie chart), an income-vs-expense chart for the selected period, and a fixed trailing-6-month cash flow + savings trend
+- Export the current report as CSV (summary + full transaction list) or PDF (formatted summary + category tables)
+
 Every resource is scoped to the authenticated user — one user can never read or modify another user's data.
 
-**Planned:** reports, notifications, an admin panel, and Docker Compose for one-command startup — each has a placeholder page in the sidebar already. See [Roadmap](#roadmap).
+**Planned:** notifications, an admin panel, and Docker Compose for one-command startup — each has a placeholder page in the sidebar already. See [Roadmap](#roadmap).
 
 ## Tech Stack
 
@@ -155,6 +160,9 @@ All responses use a standard envelope: `{ success, message, data, errors, timest
 **Bills** — `/api/bills` *(authenticated)*
 `GET /` (optional `?status=PENDING|OVERDUE|PAID`) · `GET /upcoming?limit=` · `GET /{id}` · `POST /` · `PUT /{id}` · `DELETE /{id}` · `POST /{id}/pay`
 
+**Reports** — `/api/reports` *(authenticated)*
+`GET /summary?range=TODAY|THIS_WEEK|THIS_MONTH|LAST_MONTH|THIS_YEAR|CUSTOM&startDate=&endDate=` · `GET /export/csv` (same params, returns a CSV file) · `GET /export/pdf` (same params, returns a PDF file)
+
 ## Roadmap
 
 - [x] Project setup
@@ -167,7 +175,7 @@ All responses use a standard envelope: `{ success, message, data, errors, timest
 - [x] Budget management
 - [x] Savings goals
 - [x] Bills and reminders
-- [ ] Reports and analytics
+- [x] Reports and analytics
 - [ ] Notifications
 - [ ] Admin panel
 - [ ] Testing and security hardening
