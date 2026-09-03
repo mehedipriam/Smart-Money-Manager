@@ -21,4 +21,7 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
     List<Bill> findAllByUserIdAndPaymentStatusAndDueDateBefore(Long userId, BillPaymentStatus paymentStatus, LocalDate date);
 
     List<Bill> findAllByUserIdAndPaymentStatusNotOrderByDueDateAsc(Long userId, BillPaymentStatus paymentStatus);
+
+    /** Every user's still-unpaid bill due on an exact date — used by the reminder scheduler, across all users. */
+    List<Bill> findAllByPaymentStatusAndDueDate(BillPaymentStatus paymentStatus, LocalDate dueDate);
 }

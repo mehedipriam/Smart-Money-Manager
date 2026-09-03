@@ -14,6 +14,7 @@ import com.smartmoneymanager.backend.dto.response.GoalResponse;
 import com.smartmoneymanager.backend.entity.Goal;
 import com.smartmoneymanager.backend.entity.GoalContribution;
 import com.smartmoneymanager.backend.entity.enums.GoalStatus;
+import com.smartmoneymanager.backend.entity.enums.NotificationType;
 import com.smartmoneymanager.backend.exception.InvalidOperationException;
 import com.smartmoneymanager.backend.exception.ResourceNotFoundException;
 import com.smartmoneymanager.backend.mapper.GoalMapper;
@@ -21,6 +22,7 @@ import com.smartmoneymanager.backend.repository.GoalContributionRepository;
 import com.smartmoneymanager.backend.repository.GoalRepository;
 import com.smartmoneymanager.backend.repository.UserRepository;
 import com.smartmoneymanager.backend.service.GoalService;
+import com.smartmoneymanager.backend.service.NotificationService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,6 +34,7 @@ public class GoalServiceImpl implements GoalService {
     private final GoalRepository goalRepository;
     private final GoalContributionRepository goalContributionRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
     private final GoalMapper goalMapper;
 
     @Override
@@ -113,6 +116,8 @@ public class GoalServiceImpl implements GoalService {
     private void applyAutoCompletion(Goal goal) {
         if (goal.getStatus() == GoalStatus.ACTIVE && goal.getCurrentSavedAmount().compareTo(goal.getTargetAmount()) >= 0) {
             goal.setStatus(GoalStatus.COMPLETED);
+            notificationService.notify(goal.getUser().getId(), NotificationType.GOAL_COMPLETED, "Goal completed",
+                    "You've reached your \"" + goal.getGoalName() + "\" goal!");
         }
     }
 

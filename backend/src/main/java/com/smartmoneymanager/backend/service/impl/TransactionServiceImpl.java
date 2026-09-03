@@ -1,7 +1,9 @@
 package com.smartmoneymanager.backend.service.impl;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.YearMonth;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,14 +20,17 @@ import com.smartmoneymanager.backend.entity.Account;
 import com.smartmoneymanager.backend.entity.Category;
 import com.smartmoneymanager.backend.entity.Transaction;
 import com.smartmoneymanager.backend.entity.User;
+import com.smartmoneymanager.backend.entity.enums.NotificationType;
 import com.smartmoneymanager.backend.entity.enums.TransactionType;
 import com.smartmoneymanager.backend.exception.InvalidOperationException;
 import com.smartmoneymanager.backend.exception.ResourceNotFoundException;
 import com.smartmoneymanager.backend.mapper.TransactionMapper;
 import com.smartmoneymanager.backend.repository.AccountRepository;
+import com.smartmoneymanager.backend.repository.BudgetRepository;
 import com.smartmoneymanager.backend.repository.CategoryRepository;
 import com.smartmoneymanager.backend.repository.TransactionRepository;
 import com.smartmoneymanager.backend.repository.UserRepository;
+import com.smartmoneymanager.backend.service.NotificationService;
 import com.smartmoneymanager.backend.service.TransactionService;
 import com.smartmoneymanager.backend.specification.TransactionSpecifications;
 
@@ -43,10 +48,15 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class TransactionServiceImpl implements TransactionService {
 
+    /** Usage percentage at or above which a BUDGET_WARNING notification fires (below BUDGET_EXCEEDED's 100%). */
+    private static final BigDecimal BUDGET_WARNING_THRESHOLD = BigDecimal.valueOf(80);
+
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final BudgetRepository budgetRepository;
+    private final NotificationService notificationService;
     private final TransactionMapper transactionMapper;
 
     @Override
@@ -89,6 +99,10 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction transaction = createSystemTransaction(
                 user, account, category, request.getType(), request.getAmount(),
                 request.getTransactionDate(), request.getDescription(), request.getNote());
+
+        if (request.getType() == TransactionType.EXPENSE) {
+            checkBudgetThresholds(userId, category, request.getTransactionDate(), request.getAmount());
+        }
 
         return transactionMapper.toResponse(transaction);
     }
@@ -146,6 +160,40 @@ public class TransactionServiceImpl implements TransactionService {
                 .note(note)
                 .build();
         return transactionRepository.save(transaction);
+    }
+
+    /**
+     * Fires a BUDGET_WARNING/BUDGET_EXCEEDED notification exactly on the
+     * transaction that pushes usage across the 80% or 100% threshold for
+     * that category's budget in {@code date}'s month — never again on
+     * subsequent transactions once already past it. Scoped to transaction
+     * creation only; editing an existing transaction doesn't re-check.
+     */
+    private void checkBudgetThresholds(Long userId, Category category, LocalDate date, BigDecimal amount) {
+        YearMonth yearMonth = YearMonth.from(date);
+        budgetRepository.findByUserIdAndCategoryIdAndMonthAndYear(userId, category.getId(), yearMonth.getMonthValue(), yearMonth.getYear())
+                .ifPresent(budget -> {
+                    if (budget.getBudgetAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                        return;
+                    }
+                    BigDecimal usedAfter = transactionRepository.sumAmountByCategory(
+                            userId, category.getId(), TransactionType.EXPENSE, yearMonth.atDay(1), yearMonth.atEndOfMonth());
+                    BigDecimal usedBefore = usedAfter.subtract(amount);
+                    BigDecimal percentBefore = usagePercentage(usedBefore, budget.getBudgetAmount());
+                    BigDecimal percentAfter = usagePercentage(usedAfter, budget.getBudgetAmount());
+
+                    if (percentAfter.compareTo(BigDecimal.valueOf(100)) >= 0 && percentBefore.compareTo(BigDecimal.valueOf(100)) < 0) {
+                        notificationService.notify(userId, NotificationType.BUDGET_EXCEEDED, "Budget exceeded",
+                                "You've exceeded your " + category.getName() + " budget for " + yearMonth + ".");
+                    } else if (percentAfter.compareTo(BUDGET_WARNING_THRESHOLD) >= 0 && percentBefore.compareTo(BUDGET_WARNING_THRESHOLD) < 0) {
+                        notificationService.notify(userId, NotificationType.BUDGET_WARNING, "Budget warning",
+                                "You've used " + percentAfter + "% of your " + category.getName() + " budget for " + yearMonth + ".");
+                    }
+                });
+    }
+
+    private BigDecimal usagePercentage(BigDecimal used, BigDecimal budgetAmount) {
+        return used.divide(budgetAmount, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP);
     }
 
     private void applyEffect(Account account, TransactionType type, BigDecimal amount) {

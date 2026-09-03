@@ -2,6 +2,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { useTheme } from '../context/ThemeContext.jsx';
+import NotificationBell from '../components/notifications/NotificationBell.jsx';
 import './AppLayout.css';
 
 const NAV_ITEMS = [
@@ -51,14 +52,7 @@ function AppLayout() {
         <header className="app-topbar">
           <div />
           <div className="app-topbar__actions">
-            <button
-              type="button"
-              className="app-topbar__icon-btn"
-              aria-label="Notifications"
-              onClick={() => toast.info('Notifications are coming in a later phase.')}
-            >
-              🔔
-            </button>
+            <NotificationBell />
             <button
               type="button"
               className="app-topbar__icon-btn"

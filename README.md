@@ -30,11 +30,11 @@ A full-stack personal finance and expense tracking web application — accounts,
 - Date range filter: Today, This Week, This Month, Last Month, This Year, or a custom range
 - Spending-by-category donut chart and an income/expense/savings cash-flow chart (daily or monthly buckets depending on the range)
 - Recent transactions
-- Full app shell: dark sidebar, light/dark mode toggle (persisted per browser), notification icon (wired up once Phase 12 adds real notifications)
+- Full app shell: dark sidebar, light/dark mode toggle (persisted per browser), a live in-app notification bell
 
 **Budgets**
 - Monthly, per-category budgets (expense categories only) with used/remaining amounts and usage %
-- Visual alerts at 80% used and over-budget (real push notifications land in Phase 12)
+- Visual alerts at 80% used and over-budget, backed by a real notification the moment a transaction crosses either threshold
 - Dashboard's Budget Overview shows live progress for the current month
 
 **Savings Goals**
@@ -54,9 +54,13 @@ A full-stack personal finance and expense tracking web application — accounts,
 - Expense and income category breakdowns (pie chart), an income-vs-expense chart for the selected period, and a fixed trailing-6-month cash flow + savings trend
 - Export the current report as CSV (summary + full transaction list) or PDF (formatted summary + category tables)
 
+**Notifications**
+- In-app bell with a live unread badge (polled every 30s), mark-as-read, mark-all-as-read, and delete
+- Raised automatically: budget warning (80% used) / exceeded, on the transaction that crosses the threshold; goal completed, when a contribution or edit reaches the target; recurring transaction added, each time the scheduler generates one; bill due reminder, 3 days before and on the due date
+
 Every resource is scoped to the authenticated user — one user can never read or modify another user's data.
 
-**Planned:** notifications, an admin panel, and Docker Compose for one-command startup — each has a placeholder page in the sidebar already. See [Roadmap](#roadmap).
+**Planned:** an admin panel and Docker Compose for one-command startup — each has a placeholder page in the sidebar already. See [Roadmap](#roadmap).
 
 ## Tech Stack
 
@@ -124,6 +128,7 @@ Without a real SMTP server configured, verification and password-reset emails ar
 | `FRONTEND_URL` | Used for CORS and links in emails | `http://localhost:5173` |
 | `MAIL_HOST` / `MAIL_PORT` / `MAIL_USERNAME` / `MAIL_PASSWORD` | SMTP config | unset (links are logged instead) |
 | `RECURRING_TRANSACTIONS_CRON` | Cron schedule for generating due recurring transactions | `0 5 0 * * *` (daily at 00:05) |
+| `BILL_REMINDERS_CRON` | Cron schedule for sending bill due-date reminder notifications | `0 10 0 * * *` (daily at 00:10) |
 | `VITE_API_BASE_URL` (frontend `.env`) | Backend API base URL | `http://localhost:8080/api` |
 
 ## API Reference
@@ -163,6 +168,9 @@ All responses use a standard envelope: `{ success, message, data, errors, timest
 **Reports** — `/api/reports` *(authenticated)*
 `GET /summary?range=TODAY|THIS_WEEK|THIS_MONTH|LAST_MONTH|THIS_YEAR|CUSTOM&startDate=&endDate=` · `GET /export/csv` (same params, returns a CSV file) · `GET /export/pdf` (same params, returns a PDF file)
 
+**Notifications** — `/api/notifications` *(authenticated)*
+`GET /` (optional `?unreadOnly=true`) · `GET /unread-count` · `PUT /{id}/read` · `PUT /read-all` · `DELETE /{id}`
+
 ## Roadmap
 
 - [x] Project setup
@@ -176,7 +184,7 @@ All responses use a standard envelope: `{ success, message, data, errors, timest
 - [x] Savings goals
 - [x] Bills and reminders
 - [x] Reports and analytics
-- [ ] Notifications
+- [x] Notifications
 - [ ] Admin panel
 - [ ] Testing and security hardening
 - [ ] Dockerization

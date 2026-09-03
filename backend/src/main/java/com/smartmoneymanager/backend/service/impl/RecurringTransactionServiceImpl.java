@@ -13,6 +13,7 @@ import com.smartmoneymanager.backend.dto.response.RecurringTransactionResponse;
 import com.smartmoneymanager.backend.entity.Account;
 import com.smartmoneymanager.backend.entity.Category;
 import com.smartmoneymanager.backend.entity.RecurringTransaction;
+import com.smartmoneymanager.backend.entity.enums.NotificationType;
 import com.smartmoneymanager.backend.entity.enums.RecurringFrequency;
 import com.smartmoneymanager.backend.entity.enums.TransactionType;
 import com.smartmoneymanager.backend.exception.InvalidOperationException;
@@ -22,6 +23,7 @@ import com.smartmoneymanager.backend.repository.AccountRepository;
 import com.smartmoneymanager.backend.repository.CategoryRepository;
 import com.smartmoneymanager.backend.repository.RecurringTransactionRepository;
 import com.smartmoneymanager.backend.repository.UserRepository;
+import com.smartmoneymanager.backend.service.NotificationService;
 import com.smartmoneymanager.backend.service.RecurringTransactionService;
 import com.smartmoneymanager.backend.service.TransactionService;
 
@@ -42,6 +44,7 @@ public class RecurringTransactionServiceImpl implements RecurringTransactionServ
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final TransactionService transactionService;
+    private final NotificationService notificationService;
     private final RecurringTransactionMapper recurringTransactionMapper;
 
     @Override
@@ -123,6 +126,10 @@ public class RecurringTransactionServiceImpl implements RecurringTransactionServ
             transactionService.createSystemTransaction(
                     recurring.getUser(), recurring.getAccount(), recurring.getCategory(), recurring.getType(),
                     recurring.getAmount(), recurring.getNextRunDate(), recurring.getDescription(), recurring.getNote());
+            notificationService.notify(recurring.getUser().getId(), NotificationType.RECURRING_TRANSACTION_ADDED,
+                    "Recurring transaction added",
+                    (recurring.getDescription() != null ? recurring.getDescription() : recurring.getCategory().getName())
+                            + " was automatically added for " + recurring.getNextRunDate() + ".");
             generated++;
 
             LocalDate next = advance(recurring.getNextRunDate(), recurring.getFrequency());
