@@ -101,6 +101,15 @@
 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<!-- In-memory DB for integration tests (MySQL compatibility mode) — the "test" profile
+			     points at it instead of a real MySQL instance. Version pinned to what's available
+			     in the offline-friendly local repo cache. -->
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>2.2.224</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>

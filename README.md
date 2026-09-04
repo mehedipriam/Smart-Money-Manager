@@ -120,6 +120,18 @@ Runs on `http://localhost:5173`. Copy `.env.example` to `.env` to configure `VIT
 
 Without a real SMTP server configured, verification and password-reset emails aren't actually delivered — the links are logged to the backend console instead, so registration/reset flows still work end-to-end locally. Point `MAIL_HOST`/`MAIL_PORT` at a tool like [MailHog](https://github.com/mailhog/MailHog) to receive them as real emails.
 
+### Backend tests
+
+```
+cd backend
+./mvnw test
+```
+
+Runs against an in-memory H2 database (`test` profile, `src/test/resources/application-test.properties`) — no real MySQL or SMTP server needed. Covers:
+- **Authentication boundary**: weak-password/duplicate-email rejection, login blocked before email verification or on a wrong password, protected routes reject a missing/garbage/expired-by-disablement JWT.
+- **Ownership (IDOR)**: a second authenticated user gets 404 — never the data, never a 403 that would confirm the id exists — when reading, updating, or deleting another user's account/transaction.
+- **Admin authorization**: `/api/admin/**` rejects a plain user (403) and an anonymous request (401); an admin's user-list response never carries a financial field; an admin can't disable their own account; disabling a user invalidates their existing token on the very next request.
+
 ## Environment Variables
 
 | Variable | Description | Default |
@@ -197,6 +209,6 @@ All responses use a standard envelope: `{ success, message, data, errors, timest
 - [x] Reports and analytics
 - [x] Notifications
 - [x] Admin panel
-- [ ] Testing and security hardening
+- [x] Testing and security hardening
 - [ ] Dockerization
 - [ ] Deployment preparation
