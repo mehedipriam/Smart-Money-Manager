@@ -1,0 +1,47 @@
+# Production overlay on top of docker-compose.yml — apply both together:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+#
+# What this changes versus the base file:
+#   - mysql and backend no longer publish a port to the host — only reachable internally,
+#     over smm-network, by service name. The base file's public MYSQL_PORT/BACKEND_PORT
+#     mappings are for local development convenience and have no place on a real server.
+#   - frontend likewise stops publishing directly; caddy is the only internet-facing service.
+#   - caddy terminates HTTPS on 80/443 (see ./Caddyfile) and reverse-proxies to frontend.
+#   - restart: always instead of unless-stopped, so a host reboot brings everything back.
+#
+# See README "Deployment" for the full server setup walkthrough.
+
+services:
+  mysql:
+    restart: always
+    ports: !reset []
+
+  backend:
+    restart: always
+    ports: !reset []
+
+  frontend:
+    restart: always
+    ports: !reset []
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: smm-caddy
+    restart: always
+    depends_on:
+      - frontend
+    environment:
+      DOMAIN: ${DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - smm-network
+
+volumes:
+  caddy_data:
+  caddy_config:

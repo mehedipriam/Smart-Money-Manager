@@ -77,9 +77,13 @@ Every resource is scoped to the authenticated user — one user can never read o
 
 ```
 Smart Money Manager/
-├── backend/    Spring Boot REST API (controller / service / repository / entity / dto / mapper / security / config / exception)
-├── frontend/   React SPA (components / pages / layouts / services / hooks / context / routes / utils)
-├── docs/       Database schema and design notes
+├── backend/                     Spring Boot REST API (controller / service / repository / entity / dto / mapper / security / config / exception)
+├── frontend/                    React SPA (components / pages / layouts / services / hooks / context / routes / utils)
+├── docs/                        Database schema and design notes
+├── docker-compose.yml           Base stack: mysql + backend + frontend (see "Docker")
+├── docker-compose.prod.yml      Production overlay: hardened ports + Caddy/HTTPS (see "Deployment")
+├── Caddyfile                    Reverse proxy + automatic HTTPS config, used only by the prod overlay
+├── .env.example                 Template for the root .env that both compose files read
 └── README.md
 ```
 
@@ -118,6 +122,86 @@ The frontend's nginx container reverse-proxies `/api/*` to the backend container
 | `docker compose logs -f backend` | Follow logs from just one service (`backend` / `frontend` / `mysql`) |
 | `docker compose up --build <service>` | Rebuild and restart just one service |
 | `docker compose ps` | Show each service's status, including healthcheck state |
+
+## Deployment
+
+Builds on the [Docker](#docker) setup above via a production overlay, `docker-compose.prod.yml`, applied together with the base file rather than replacing it — it never introduces a separate, non-Docker deployment path.
+
+### 1. Server prerequisites
+
+- A server (VPS or similar) with Docker + Docker Compose installed, and ports 80/443 open.
+- A domain's DNS A record pointed at the server's IP — needed for Caddy (the reverse proxy the overlay adds) to obtain a real Let's Encrypt certificate. Testing the overlay locally instead? Set `DOMAIN=localhost` and Caddy issues itself a locally-trusted certificate instead — no real DNS needed.
+
+### 2. Configure
+
+```
+git clone <repo-url>
+cd "Smart Money Manager"
+cp .env.example .env
+```
+
+Edit `.env` with real values:
+- `JWT_SECRET` — a long random value, e.g. `openssl rand -hex 64`
+- `MYSQL_ROOT_PASSWORD` / `MYSQL_PASSWORD` — strong, unique passwords
+- `DOMAIN` — your domain, e.g. `smartmoneymanager.example.com`
+- `FRONTEND_URL` — `https://` + that same domain (used for CORS and the links inside verification/reset emails)
+- `MAIL_*` — real SMTP credentials, so those emails actually get delivered
+- Leave `SPRING_PROFILES_ACTIVE=dev` for now — see the next step
+
+### 3. First boot: create and verify the schema, then lock it
+
+```
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+docker compose exec mysql mysql -u root -p"$MYSQL_ROOT_PASSWORD" smart_money_manager -e "SHOW TABLES;"
+```
+
+The `dev` profile's `ddl-auto=update` creates all 14 tables against the fresh database on this first run. Confirm all 14 are listed (see [`docs/PHASE_2_DATABASE_SCHEMA.md`](docs/PHASE_2_DATABASE_SCHEMA.md)), then switch `SPRING_PROFILES_ACTIVE=prod` in `.env` and restart just the backend:
+
+```
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d backend
+```
+
+`application-prod.properties` uses `ddl-auto=validate` — from now on the backend refuses to start if the schema doesn't match, rather than silently altering it.
+
+### 4. Verify
+
+Visit `https://<DOMAIN>` — Caddy should present a valid certificate within seconds. `docker compose -f docker-compose.yml -f docker-compose.prod.yml ps` should show all four services (`mysql`, `backend`, `frontend`, `caddy`) up, with `mysql`/`backend`/`frontend` healthy.
+
+### What the overlay changes
+
+| | Base (`docker-compose.yml`) | + `docker-compose.prod.yml` |
+|---|---|---|
+| Internet-facing | `mysql`, `backend`, `frontend` each publish a port | only `caddy` (80/443) |
+| `mysql` / `backend` | reachable at `localhost:<port>` for local tools | internal-only, over `smm-network` |
+| HTTPS | none | automatic, via Caddy + Let's Encrypt |
+| Restart policy | `unless-stopped` | `always` |
+
+### Updating
+
+```
+git pull
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+```
+
+### Backups
+
+```
+docker compose exec mysql mysqldump -u root -p"$MYSQL_ROOT_PASSWORD" smart_money_manager > backup-$(date +%F).sql
+```
+
+Restore with `docker compose exec -T mysql mysql -u root -p"$MYSQL_ROOT_PASSWORD" smart_money_manager < backup-2026-01-01.sql`. The `mysql_data` volume itself also persists across restarts and redeploys on its own — only `docker compose down -v` removes it.
+
+### Deploying frontend and backend separately
+
+The two are fully decoupled — Docker Compose is the recommended path here, not the only possible one. The backend is a single self-contained container (or plain jar: `./mvnw clean package` → `backend/target/*.jar`) deployable anywhere that can reach a MySQL instance and has the [environment variables](#environment-variables) below set. The frontend is a static Vite build (`npm run build` → `frontend/dist/`) deployable to any static host or CDN, with `VITE_API_BASE_URL` pointed at wherever the backend ends up — add that frontend origin to the backend's `FRONTEND_URL` if the two aren't served from the same origin, so CORS still allows it.
+
+### Security checklist before going live
+
+- [ ] `JWT_SECRET`, `MYSQL_ROOT_PASSWORD`, `MYSQL_PASSWORD` are strong, unique, and not left as the `.env.example` placeholders
+- [ ] `.env` is never committed (already `.gitignore`d) or shared outside the deployment
+- [ ] `SPRING_PROFILES_ACTIVE=prod` once the schema is verified — never run `dev`'s auto-schema-update against real data
+- [ ] Running with **both** compose files (`-f docker-compose.yml -f docker-compose.prod.yml`) — the base file alone still publishes `mysql`/`backend` ports directly to the host
+- [ ] Real SMTP credentials are set, or verification/reset links only ever reach the backend's logs, not real users
 
 ## Getting Started
 
@@ -241,4 +325,4 @@ All responses use a standard envelope: `{ success, message, data, errors, timest
 - [x] Admin panel
 - [x] Testing and security hardening
 - [x] Dockerization
-- [ ] Deployment preparation
+- [x] Deployment preparation
