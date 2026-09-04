@@ -66,14 +66,12 @@ A full-stack personal finance and expense tracking web application — accounts,
 
 Every resource is scoped to the authenticated user — one user can never read or modify another user's data.
 
-**Planned:** Docker Compose for one-command startup. See [Roadmap](#roadmap).
-
 ## Tech Stack
 
 **Frontend:** React (Vite), Axios, React Router, Recharts
 **Backend:** Java 17, Spring Boot, Spring Security, JWT, Spring Data JPA, Hibernate, Maven
 **Database:** MySQL
-**DevOps:** Docker, Docker Compose (planned)
+**DevOps:** Docker, Docker Compose
 
 ## Project Structure
 
@@ -87,11 +85,43 @@ Smart Money Manager/
 
 ## Prerequisites
 
-- Java 17+
-- Node.js 18+
-- MySQL 8+ (a local instance, or run one in Docker)
+Either:
+- Docker + Docker Compose (the whole stack in one command — see [Docker](#docker) below), **or**
+- Java 17+, Node.js 18+, and MySQL 8+ for running each service yourself (see [Getting Started](#getting-started))
+
+## Docker
+
+Runs MySQL, the backend, and the frontend together with one command — no local Java/Node/MySQL install needed.
+
+```
+cp .env.example .env    # then edit JWT_SECRET, DB passwords, etc.
+docker compose up --build
+```
+
+- Frontend: `http://localhost:3000` (or your `FRONTEND_PORT`)
+- Backend API: `http://localhost:8080/api` (or your `BACKEND_PORT`)
+- MySQL: `localhost:3306` (or your `MYSQL_PORT`), for connecting a client like MySQL Workbench
+
+The frontend's nginx container reverse-proxies `/api/*` to the backend container, so the browser only ever talks to one origin — CORS never comes into play for normal use. `backend` waits for MySQL's healthcheck (not just "container started") before connecting, and `frontend` waits for `backend` to start.
+
+`SPRING_PROFILES_ACTIVE` defaults to `dev` in `.env.example`, which auto-creates the schema (`ddl-auto=update`) on the fresh database Compose just created — matching a true first run, no manual schema setup. Switch it to `prod` (`ddl-auto=validate`) only once that schema already exists and has been verified, per [Phase 2's schema doc](docs/PHASE_2_DATABASE_SCHEMA.md); Compose itself never runs migrations, it just injects environment variables into whichever profile is active — see `backend/src/main/resources/application-dev.properties` / `application-prod.properties`.
+
+**Commands:**
+
+| Command | Effect |
+|---|---|
+| `docker compose up --build` | Build images (if needed) and start all three services, attached |
+| `docker compose up --build -d` | Same, detached (background) |
+| `docker compose down` | Stop and remove the containers (the `mysql_data` volume — and your data — survives) |
+| `docker compose down -v` | Stop and remove containers **and** the MySQL volume — full reset, all data lost |
+| `docker compose logs -f` | Follow logs from all three services |
+| `docker compose logs -f backend` | Follow logs from just one service (`backend` / `frontend` / `mysql`) |
+| `docker compose up --build <service>` | Rebuild and restart just one service |
+| `docker compose ps` | Show each service's status, including healthcheck state |
 
 ## Getting Started
+
+The manual, no-Docker path — run this instead of (not in addition to) the [Docker](#docker) section above.
 
 ### 1. Database
 
@@ -210,5 +240,5 @@ All responses use a standard envelope: `{ success, message, data, errors, timest
 - [x] Notifications
 - [x] Admin panel
 - [x] Testing and security hardening
-- [ ] Dockerization
+- [x] Dockerization
 - [ ] Deployment preparation

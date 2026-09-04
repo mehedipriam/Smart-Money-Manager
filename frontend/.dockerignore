@@ -1,0 +1,8 @@
+node_modules/
+dist/
+*.log
+.env
+.idea/
+.vscode/
+.git/
+.gitignore
