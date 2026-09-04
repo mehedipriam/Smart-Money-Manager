@@ -3,6 +3,7 @@ package com.smartmoneymanager.backend.service.impl;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -55,6 +56,15 @@ public class AuthServiceImpl implements AuthService {
     private final EmailService emailService;
     private final UserMapper userMapper;
 
+    /**
+     * Off when no SMTP server is configured to actually deliver the verification link — see
+     * REQUIRE_EMAIL_VERIFICATION in .env.example. Registration still issues a token and
+     * (best-effort) sends the email either way; this only gates whether login enforces it,
+     * so flipping it back on later doesn't require touching any already-registered account.
+     */
+    @Value("${app.security.require-email-verification}")
+    private boolean requireEmailVerification;
+
     @Override
     public UserProfileResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -86,7 +96,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        if (!user.isEmailVerified()) {
+        if (requireEmailVerification && !user.isEmailVerified()) {
             throw new EmailNotVerifiedException("Please verify your email before logging in");
         }
 
