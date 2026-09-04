@@ -52,6 +52,10 @@ services:
       MAIL_PORT: ${MAIL_PORT:-587}
       MAIL_USERNAME: ${MAIL_USERNAME:-}
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      # Default false, matching a plain local relay like MailHog (no auth/TLS). Set both to
+      # true in .env once MAIL_HOST points at a real SMTP provider — see README "Email".
+      MAIL_SMTP_AUTH: ${MAIL_SMTP_AUTH:-false}
+      MAIL_SMTP_STARTTLS: ${MAIL_SMTP_STARTTLS:-false}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
       ADMIN_FULL_NAME: ${ADMIN_FULL_NAME:-System Admin}

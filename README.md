@@ -232,7 +232,32 @@ Runs on `http://localhost:5173`. Copy `.env.example` to `.env` to configure `VIT
 
 ### Email in development
 
-Without a real SMTP server configured, verification and password-reset emails aren't actually delivered — the links are logged to the backend console instead, so registration/reset flows still work end-to-end locally. Point `MAIL_HOST`/`MAIL_PORT` at a tool like [MailHog](https://github.com/mailhog/MailHog) to receive them as real emails.
+Without a real SMTP server configured, verification and password-reset emails aren't actually delivered — the links are logged to the backend console instead (`docker compose logs backend | grep "link"` if you're on Docker), so registration/reset flows still work end-to-end locally without any of this. Set these to actually send them, either in `backend/.env`/environment variables (manual setup) or in the root `.env` (Docker — see [Docker](#docker)):
+
+| Variable | Meaning |
+|---|---|
+| `MAIL_HOST` | SMTP server hostname |
+| `MAIL_PORT` | SMTP port — `587` (STARTTLS) is the common default, `465` (implicit TLS, not supported here) or `25`/`1025` (plain) for local relays |
+| `MAIL_USERNAME` / `MAIL_PASSWORD` | SMTP login |
+| `MAIL_SMTP_AUTH` / `MAIL_SMTP_STARTTLS` | `true` for a real provider, `false` for a plain local relay (see below) |
+
+**Option A — a real provider** (so you actually receive the emails), e.g. Gmail:
+- `MAIL_HOST=smtp.gmail.com`, `MAIL_PORT=587`
+- `MAIL_USERNAME=` your Gmail address
+- `MAIL_PASSWORD=` a 16-character [Google App Password](https://myaccount.google.com/apppasswords) — not your normal login password (requires 2-Step Verification enabled on the account)
+- `MAIL_SMTP_AUTH=true`, `MAIL_SMTP_STARTTLS=true`
+
+Any other provider (SendGrid, Mailgun, Amazon SES, your own mail server, ...) works the same way — just its own host/port/credentials, with auth and STARTTLS still `true`.
+
+**Option B — a sandbox/local relay** (nothing leaves your machine, easiest for just seeing the flow work), e.g. [Mailtrap](https://mailtrap.io)'s free testing inbox or a local [MailHog](https://github.com/mailhog/MailHog) container:
+- Mailtrap: use the host/port/username/password it gives you for its "Sending Domains" → SMTP inbox, with `MAIL_SMTP_AUTH=true` (Mailtrap does require auth) and `MAIL_SMTP_STARTTLS=true`
+- MailHog: `MAIL_HOST=mailhog` (or `localhost` outside Docker), `MAIL_PORT=1025`, `MAIL_SMTP_AUTH=false`, `MAIL_SMTP_STARTTLS=false` — no credentials needed; view caught emails at MailHog's own web UI (`:8025`)
+
+After changing `.env`, restart just the backend to pick it up:
+```
+docker compose up -d backend      # Docker — recreates the container with the new env
+```
+(manual setup: just restart `./mvnw spring-boot:run`.)
 
 ### Backend tests
 
@@ -259,6 +284,7 @@ Runs against an in-memory H2 database (`test` profile, `src/test/resources/appli
 | `JWT_REFRESH_EXPIRATION_MS` | Refresh token lifetime (ms) | `604800000` (7d) |
 | `FRONTEND_URL` | Used for CORS and links in emails | `http://localhost:5173` |
 | `MAIL_HOST` / `MAIL_PORT` / `MAIL_USERNAME` / `MAIL_PASSWORD` | SMTP config | unset (links are logged instead) |
+| `MAIL_SMTP_AUTH` / `MAIL_SMTP_STARTTLS` | Whether the SMTP server needs auth/STARTTLS — `true` for a real provider, `false` for a plain local relay | `false` (see [Email in development](#email-in-development)) |
 | `RECURRING_TRANSACTIONS_CRON` | Cron schedule for generating due recurring transactions | `0 5 0 * * *` (daily at 00:05) |
 | `BILL_REMINDERS_CRON` | Cron schedule for sending bill due-date reminder notifications | `0 10 0 * * *` (daily at 00:10) |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Login for a seeded `ROLE_ADMIN` account, created on startup if not already present | dev-only fallback (`admin@smartmoneymanager.com` / `Admin@12345`); unset (no admin seeded) in `prod` |
