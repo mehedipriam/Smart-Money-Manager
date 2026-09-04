@@ -10,6 +10,8 @@ import BudgetsPage from '../pages/budgets/BudgetsPage.jsx';
 import GoalsPage from '../pages/goals/GoalsPage.jsx';
 import BillsPage from '../pages/bills/BillsPage.jsx';
 import ReportsPage from '../pages/reports/ReportsPage.jsx';
+import AdminDashboardPage from '../pages/admin/AdminDashboardPage.jsx';
+import AdminUsersPage from '../pages/admin/AdminUsersPage.jsx';
 import LoginPage from '../pages/auth/LoginPage.jsx';
 import RegisterPage from '../pages/auth/RegisterPage.jsx';
 import RegistrationSuccessPage from '../pages/auth/RegistrationSuccessPage.jsx';
@@ -21,6 +23,7 @@ import AuthLayout from '../layouts/AuthLayout.jsx';
 import AppLayout from '../layouts/AppLayout.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
 import GuestOnlyRoute from './GuestOnlyRoute.jsx';
+import AdminRoute from './AdminRoute.jsx';
 
 function AppRoutes() {
   return (
@@ -56,6 +59,11 @@ function AppRoutes() {
           <Route path="/goals" element={<GoalsPage />} />
           <Route path="/bills" element={<BillsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
+
+          <Route element={<AdminRoute />}>
+            <Route path="/admin" element={<AdminDashboardPage />} />
+            <Route path="/admin/users" element={<AdminUsersPage />} />
+          </Route>
         </Route>
       </Route>
     </Routes>

@@ -1,17 +1,22 @@
 package com.smartmoneymanager.backend.config;
 
 import java.util.List;
+import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.smartmoneymanager.backend.entity.Category;
 import static com.smartmoneymanager.backend.entity.Category.TRANSFER_CATEGORY_NAME;
 import com.smartmoneymanager.backend.entity.Role;
+import com.smartmoneymanager.backend.entity.User;
 import com.smartmoneymanager.backend.entity.enums.CategoryType;
 import com.smartmoneymanager.backend.entity.enums.RoleName;
 import com.smartmoneymanager.backend.repository.CategoryRepository;
 import com.smartmoneymanager.backend.repository.RoleRepository;
+import com.smartmoneymanager.backend.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +58,18 @@ public class DataInitializer implements CommandLineRunner {
 
     private final RoleRepository roleRepository;
     private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    /** Blank by default in prod (see application-prod.properties) — set explicitly to seed an admin login. */
+    @Value("${app.admin.email:}")
+    private String adminEmail;
+
+    @Value("${app.admin.password:}")
+    private String adminPassword;
+
+    @Value("${app.admin.full-name:System Admin}")
+    private String adminFullName;
 
     @Override
     public void run(String... args) {
@@ -62,6 +79,8 @@ public class DataInitializer implements CommandLineRunner {
                 return roleRepository.save(Role.builder().name(roleName).build());
             });
         }
+
+        seedAdminUser();
 
         for (DefaultCategory defaultCategory : DEFAULT_CATEGORIES) {
             if (!categoryRepository.existsByNameAndTypeAndUserIsNull(defaultCategory.name(), defaultCategory.type())) {
@@ -76,5 +95,25 @@ public class DataInitializer implements CommandLineRunner {
                         .build());
             }
         }
+    }
+
+    /** No-op when ADMIN_EMAIL/ADMIN_PASSWORD are unset (the prod default) — an admin account must then be promoted manually. */
+    private void seedAdminUser() {
+        if (adminEmail.isBlank() || adminPassword.isBlank() || userRepository.existsByEmail(adminEmail)) {
+            return;
+        }
+
+        Role adminRole = roleRepository.findByName(RoleName.ROLE_ADMIN)
+                .orElseThrow(() -> new IllegalStateException("ROLE_ADMIN is not seeded"));
+
+        log.info("Seeding default admin account: {}", adminEmail);
+        userRepository.save(User.builder()
+                .fullName(adminFullName)
+                .email(adminEmail)
+                .password(passwordEncoder.encode(adminPassword))
+                .emailVerified(true)
+                .enabled(true)
+                .roles(Set.of(adminRole))
+                .build());
     }
 }

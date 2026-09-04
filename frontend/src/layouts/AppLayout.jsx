@@ -22,6 +22,7 @@ function AppLayout() {
   const toast = useToast();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const isAdmin = user?.roles?.includes('ROLE_ADMIN');
 
   async function handleLogout() {
     await logout();
@@ -45,6 +46,12 @@ function AppLayout() {
               {item.label}
             </NavLink>
           ))}
+          {isAdmin && (
+            <NavLink to="/admin" className={({ isActive }) => `app-sidebar__link${isActive ? ' active' : ''}`}>
+              <span className="app-sidebar__icon">🛡️</span>
+              Admin Panel
+            </NavLink>
+          )}
         </nav>
       </aside>
 

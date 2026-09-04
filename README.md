@@ -58,9 +58,15 @@ A full-stack personal finance and expense tracking web application — accounts,
 - In-app bell with a live unread badge (polled every 30s), mark-as-read, mark-all-as-read, and delete
 - Raised automatically: budget warning (80% used) / exceeded, on the transaction that crosses the threshold; goal completed, when a contribution or edit reaches the target; recurring transaction added, each time the scheduler generates one; bill due reminder, 3 days before and on the due date
 
+**Admin Panel** *(`ROLE_ADMIN` only)*
+- System statistics: total/active/disabled/verified users, new users this month, and total counts of transactions, accounts, budgets, goals, and bills
+- Searchable, paginated user list (by name/email, filterable by active/disabled); view a single user's profile/account status
+- Enable/disable a user account (blocks/restores login); an admin cannot disable their own account
+- Admins never see another user's individual accounts, transactions, budgets, goals, or bills — only profile and account-status fields
+
 Every resource is scoped to the authenticated user — one user can never read or modify another user's data.
 
-**Planned:** an admin panel and Docker Compose for one-command startup — each has a placeholder page in the sidebar already. See [Roadmap](#roadmap).
+**Planned:** Docker Compose for one-command startup. See [Roadmap](#roadmap).
 
 ## Tech Stack
 
@@ -129,6 +135,8 @@ Without a real SMTP server configured, verification and password-reset emails ar
 | `MAIL_HOST` / `MAIL_PORT` / `MAIL_USERNAME` / `MAIL_PASSWORD` | SMTP config | unset (links are logged instead) |
 | `RECURRING_TRANSACTIONS_CRON` | Cron schedule for generating due recurring transactions | `0 5 0 * * *` (daily at 00:05) |
 | `BILL_REMINDERS_CRON` | Cron schedule for sending bill due-date reminder notifications | `0 10 0 * * *` (daily at 00:10) |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Login for a seeded `ROLE_ADMIN` account, created on startup if not already present | dev-only fallback (`admin@smartmoneymanager.com` / `Admin@12345`); unset (no admin seeded) in `prod` |
+| `ADMIN_FULL_NAME` | Display name for the seeded admin account | `System Admin` |
 | `VITE_API_BASE_URL` (frontend `.env`) | Backend API base URL | `http://localhost:8080/api` |
 
 ## API Reference
@@ -171,6 +179,9 @@ All responses use a standard envelope: `{ success, message, data, errors, timest
 **Notifications** — `/api/notifications` *(authenticated)*
 `GET /` (optional `?unreadOnly=true`) · `GET /unread-count` · `PUT /{id}/read` · `PUT /read-all` · `DELETE /{id}`
 
+**Admin** — `/api/admin` *(`ROLE_ADMIN` only)*
+`GET /stats` · `GET /users` (paginated; `?search=&enabled=&sortBy=&sortDir=&page=&size=`) · `GET /users/{id}` · `PUT /users/{id}/enable` · `PUT /users/{id}/disable`
+
 ## Roadmap
 
 - [x] Project setup
@@ -185,7 +196,7 @@ All responses use a standard envelope: `{ success, message, data, errors, timest
 - [x] Bills and reminders
 - [x] Reports and analytics
 - [x] Notifications
-- [ ] Admin panel
+- [x] Admin panel
 - [ ] Testing and security hardening
 - [ ] Dockerization
 - [ ] Deployment preparation
