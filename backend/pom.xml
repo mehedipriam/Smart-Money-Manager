@@ -61,6 +61,12 @@
 			<version>1.3.42</version>
 		</dependency>
 		<dependency>
+			<!-- Reads .xlsx/.xls for the transaction import feature (Excel-based sales-tracker parsers). -->
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>5.3.0</version>
+		</dependency>
+		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>

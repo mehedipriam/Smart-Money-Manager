@@ -12,6 +12,7 @@ import Modal from '../../components/common/Modal.jsx';
 import Table from '../../components/common/Table.jsx';
 import TransactionFilters from './TransactionFilters.jsx';
 import TransactionForm from './TransactionForm.jsx';
+import TransactionImportModal from './TransactionImportModal.jsx';
 import './TransactionsPage.css';
 
 const EMPTY_FILTERS = {
@@ -193,9 +194,19 @@ function TransactionsPage() {
             <Link to="/transactions/recurring">Manage recurring transactions →</Link>
           </p>
         </div>
-        <Button style={{ width: 'auto' }} onClick={() => setModal('create')} disabled={accounts.length === 0}>
-          + Add transaction
-        </Button>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <Button
+            variant="secondary"
+            style={{ width: 'auto' }}
+            onClick={() => setModal('import')}
+            disabled={accounts.length === 0}
+          >
+            Import transactions
+          </Button>
+          <Button style={{ width: 'auto' }} onClick={() => setModal('create')} disabled={accounts.length === 0}>
+            + Add transaction
+          </Button>
+        </div>
       </div>
 
       {accounts.length === 0 ? (
@@ -263,6 +274,17 @@ function TransactionsPage() {
             onCancel={closeModal}
             submitting={submitting}
             fieldErrors={fieldErrors}
+          />
+        </Modal>
+      )}
+
+      {modal === 'import' && (
+        <Modal title="Import transactions" onClose={closeModal}>
+          <TransactionImportModal
+            accounts={accounts}
+            categories={categories}
+            onCancel={closeModal}
+            onImported={() => Promise.all([fetchTransactions(), accountService.getAccounts().then(setAccounts)])}
           />
         </Modal>
       )}
