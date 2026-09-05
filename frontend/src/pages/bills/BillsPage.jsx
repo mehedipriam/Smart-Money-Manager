@@ -120,7 +120,11 @@ function BillsPage() {
   const columns = [
     { key: 'dueDate', label: 'Due date' },
     { key: 'billName', label: 'Bill' },
-    { key: 'category', label: 'Category', render: (row) => (row.category ? `${row.category.icon} ${row.category.name}` : '—') },
+    {
+      key: 'category',
+      label: 'Category',
+      render: (row) => (row.category ? [row.category.icon, row.category.name].filter(Boolean).join(' ') : '—'),
+    },
     { key: 'recurringType', label: 'Repeats', render: (row) => (row.recurringType ? FREQUENCY_LABELS[row.recurringType] : '—') },
     { key: 'amount', label: 'Amount', align: 'right', render: (row) => formatCurrency(row.amount, currency) },
     {

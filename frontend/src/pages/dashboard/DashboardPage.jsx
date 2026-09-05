@@ -91,7 +91,7 @@ function DashboardPage() {
 
   const recentColumns = [
     { key: 'transactionDate', label: 'Date' },
-    { key: 'category', label: 'Category', render: (row) => `${row.category.icon} ${row.category.name}` },
+    { key: 'category', label: 'Category', render: (row) => [row.category.icon, row.category.name].filter(Boolean).join(' ') },
     { key: 'description', label: 'Description', render: (row) => row.description || '—' },
     {
       key: 'amount',
